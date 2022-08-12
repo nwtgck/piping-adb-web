@@ -26,6 +26,7 @@ function _Connect(): JSX.Element | null {
 
     const [selectedBackend, setSelectedBackend] = useState<AdbBackend | undefined>();
     const [connecting, setConnecting] = useState(false);
+    const [autoConnect, setAutoConnect] = useState(false);
 
     const [usbBackendList, setUsbBackendList] = useState<AdbBackend[]>([]);
     const updateUsbBackendList = useCallback(async () => {
@@ -143,15 +144,24 @@ function _Connect(): JSX.Element | null {
         }
         const headersString = router.query["headers"] as string | undefined;
         const headers = headersString === undefined ? undefined : new Headers(JSON.parse(decodeURIComponent(headersString)));
-        setPipingBackendList([
-            new AdbPipingBackend({
-              csUrl: urlJoin(pipingSererUrl, csPath),
-              scUrl: urlJoin(pipingSererUrl, scPath),
-              scHeaders: headers,
-              csHeaders: headers,
-            }),
-        ]);
+        const adbPipingBackend = new AdbPipingBackend({
+            csUrl: urlJoin(pipingSererUrl, csPath),
+            scUrl: urlJoin(pipingSererUrl, scPath),
+            scHeaders: headers,
+            csHeaders: headers,
+        });
+        setPipingBackendList([adbPipingBackend]);
+        setSelectedBackend(adbPipingBackend);
+        const autoConnectString = router.query["auto_connect"] as string | undefined;
+        setAutoConnect(autoConnectString === "" || autoConnectString === "true" || autoConnectString === "1");
     }, [router]);
+
+    useEffect(() => {
+        if (autoConnect) {
+            console.log("auto connecting...", selectedBackend);
+            connect();
+        }
+    }, [autoConnect]);
 
 
     const handleSelectedBackendChange = (
