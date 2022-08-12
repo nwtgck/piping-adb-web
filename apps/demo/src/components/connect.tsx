@@ -9,12 +9,15 @@ import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { GlobalState } from '../state';
 import { CommonStackTokens, Icons } from '../utils';
+import {AdbPipingBackend} from "../adb-piping-backend";
+import {useRouter} from "next/router";
 
 const DropdownStyles = { dropdown: { width: '100%' } };
 
 const CredentialStore = new AdbWebCredentialStore();
 
 function _Connect(): JSX.Element | null {
+    const router = useRouter();
     const [supported, setSupported] = useState(true);
 
     const [selectedBackend, setSelectedBackend] = useState<AdbBackend | undefined>();
@@ -125,6 +128,20 @@ function _Connect(): JSX.Element | null {
         });
     }, []);
 
+    const [pipingBackendList, setPipingBackendList] = useState<AdbPipingBackend[]>([]);
+
+    useEffect(() => {
+        const csPath = router.query["cs_path"] as string | undefined;
+        const scPath = router.query["sc_path"] as string | undefined;
+        if (csPath == undefined || scPath == undefined) {
+            return;
+        }
+        setPipingBackendList([
+            new AdbPipingBackend(`https://ppng.io:3443/${csPath}`, `https://ppng.io:3443/${scPath}`),
+        ]);
+    }, [router]);
+
+
     const handleSelectedBackendChange = (
         e: React.FormEvent<HTMLDivElement>,
         option?: IDropdownOption,
@@ -210,8 +227,8 @@ function _Connect(): JSX.Element | null {
     }, []);
 
     const backendList = useMemo(
-        () => ([] as AdbBackend[]).concat(usbBackendList, wsBackendList, tcpBackendList),
-        [usbBackendList, wsBackendList, tcpBackendList]
+        () => ([] as AdbBackend[]).concat(usbBackendList, wsBackendList, tcpBackendList, pipingBackendList),
+        [usbBackendList, wsBackendList, tcpBackendList, pipingBackendList]
     );
 
     const backendOptions = useMemo(() => {
