@@ -4,7 +4,7 @@
     "categories": [
         "utilities"
     ],
-    "description": "ADB in your browser",
+    "description": "ADB over Piping Server in your browser",
     "display": "standalone",
     "icons": [
         {
@@ -12,8 +12,8 @@
         }
     ],
     "isolated_storage": true,
-    "name": "WebADB Demo",
-    "short_name": "WebADB",
+    "name": "Piping ADB",
+    "short_name": "Piping ADB",
     "start_url": "/",
     "scope": "/"
 }
