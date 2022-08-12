@@ -141,10 +141,14 @@ function _Connect(): JSX.Element | null {
         if (csPath === undefined || scPath === undefined) {
             return;
         }
+        const headersString = router.query["headers"] as string | undefined;
+        const headers = headersString === undefined ? undefined : new Headers(JSON.parse(decodeURIComponent(headersString)));
         setPipingBackendList([
             new AdbPipingBackend({
               csUrl: urlJoin(pipingSererUrl, csPath),
               scUrl: urlJoin(pipingSererUrl, scPath),
+              scHeaders: headers,
+              csHeaders: headers,
             }),
         ]);
     }, [router]);

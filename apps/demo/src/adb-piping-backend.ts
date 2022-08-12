@@ -14,6 +14,8 @@ export class AdbPipingBackend implements AdbBackend {
   public constructor(private params: {
     csUrl: string,
     scUrl: string,
+    csHeaders: Headers | undefined,
+    scHeaders: Headers | undefined,
   }) {
     this.serial = `piping_${params.csUrl}_${params.scUrl}`;
   }
@@ -27,12 +29,15 @@ export class AdbPipingBackend implements AdbBackend {
     });
     fetch(this.params.csUrl, {
       method: "POST",
+      headers: this.params.csHeaders,
       body: uploadReadableStream,
       duplex: "half",
     } as RequestInit);
 
     const scResReaderPromise = (async () => {
-      const scRes = await fetch(this.params.scUrl);
+      const scRes = await fetch(this.params.scUrl, {
+        headers: this.params.scHeaders,
+      });
       return scRes.body!.getReader();
     })();
     const scReadableStream = new ReadableStream({
