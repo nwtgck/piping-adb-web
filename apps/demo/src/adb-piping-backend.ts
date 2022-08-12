@@ -11,8 +11,11 @@ export class AdbPipingBackend implements AdbBackend {
   public readonly serial: string;
   public readonly name: string | undefined = undefined;
 
-  public constructor(private csUrl: string, private scUrl: string) {
-    this.serial = `piping_${csUrl}_${scUrl}`;
+  public constructor(private params: {
+    csUrl: string,
+    scUrl: string,
+  }) {
+    this.serial = `piping_${params.csUrl}_${params.scUrl}`;
   }
 
   public async connect() {
@@ -22,14 +25,14 @@ export class AdbPipingBackend implements AdbBackend {
         uploadReadableStreamController = ctrl;
       }
     });
-    fetch(this.csUrl, {
+    fetch(this.params.csUrl, {
       method: "POST",
       body: uploadReadableStream,
       duplex: "half",
     } as RequestInit);
 
     const scResReaderPromise = (async () => {
-      const scRes = await fetch(this.scUrl);
+      const scRes = await fetch(this.params.scUrl);
       return scRes.body!.getReader();
     })();
     const scReadableStream = new ReadableStream({

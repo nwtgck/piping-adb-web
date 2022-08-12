@@ -16,6 +16,10 @@ const DropdownStyles = { dropdown: { width: '100%' } };
 
 const CredentialStore = new AdbWebCredentialStore();
 
+function urlJoin(baseUrl: string, path: string): string {
+    return baseUrl.replace(/\/$/, '') + "/" + path;
+}
+
 function _Connect(): JSX.Element | null {
     const router = useRouter();
     const [supported, setSupported] = useState(true);
@@ -131,13 +135,17 @@ function _Connect(): JSX.Element | null {
     const [pipingBackendList, setPipingBackendList] = useState<AdbPipingBackend[]>([]);
 
     useEffect(() => {
+        const pipingSererUrl = router.query["server"] as string ?? "https://ppng.io";
         const csPath = router.query["cs_path"] as string | undefined;
         const scPath = router.query["sc_path"] as string | undefined;
-        if (csPath == undefined || scPath == undefined) {
+        if (csPath === undefined || scPath === undefined) {
             return;
         }
         setPipingBackendList([
-            new AdbPipingBackend(`https://ppng.io:3443/${csPath}`, `https://ppng.io:3443/${scPath}`),
+            new AdbPipingBackend({
+              csUrl: urlJoin(pipingSererUrl, csPath),
+              scUrl: urlJoin(pipingSererUrl, scPath),
+            }),
         ]);
     }, [router]);
 
