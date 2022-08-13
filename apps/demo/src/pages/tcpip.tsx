@@ -141,7 +141,7 @@ const TcpIp: NextPage = () => {
     return (
         <Stack {...RouteStackProps}>
             <Head>
-                <title>ADB over WiFi - Android Web Toolbox</title>
+                <title>ADB over WiFi - Piping ADB</title>
             </Head>
 
             <CommandBar items={state.commandBarItems} />

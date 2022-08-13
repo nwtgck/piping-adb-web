@@ -32,7 +32,7 @@ const DeviceInfo: NextPage = () => {
     return (
         <Stack {...RouteStackProps}>
             <Head>
-                <title>Device Info - Android Web Toolbox</title>
+                <title>Device Info - Piping ADB</title>
             </Head>
 
             <MessageBar>
