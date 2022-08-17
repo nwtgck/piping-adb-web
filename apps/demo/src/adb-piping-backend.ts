@@ -21,12 +21,7 @@ export class AdbPipingBackend implements AdbBackend {
   }
 
   public async connect() {
-    let uploadReadableStreamController: ReadableStreamDefaultController<Uint8Array> | undefined = undefined;
-    const uploadReadableStream = new ReadableStream<Uint8Array>({
-      start(ctrl) {
-        uploadReadableStreamController = ctrl;
-      }
-    });
+    const {readable: uploadReadableStream, writable: uploadWritableStream} = new TransformStream<Uint8Array>();
     fetch(this.params.csUrl, {
       method: "POST",
       headers: this.params.csHeaders,
@@ -52,20 +47,11 @@ export class AdbPipingBackend implements AdbBackend {
       }
     });
 
-    const writableStream = new WritableStream({
-      write: (chunk) => {
-        uploadReadableStreamController!.enqueue(chunk);
-      },
-    }, {
-      highWaterMark: 16 * 1024,
-      size(chunk) { return chunk.byteLength; },
-    });
-
     return {
       readable: new WrapReadableStream(scReadableStream as YumeChanReadableStream<Uint8Array>)
         .pipeThrough(new StructDeserializeStream(AdbPacket)),
       writable: pipeFrom(
-        new WrapWritableStream(writableStream as YumeChanWritableStream),
+        new WrapWritableStream(uploadWritableStream as YumeChanWritableStream),
         new AdbPacketSerializeStream()
       ),
     };
