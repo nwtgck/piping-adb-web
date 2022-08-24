@@ -7,7 +7,30 @@ import { RouteStackProps } from "../utils";
 cspell: ignore cybojenix
 */}
 
-This is a demo for my <ExternalLink href="https://github.com/yume-chan/ya-webadb/">ya-webadb</ExternalLink> project, which can use ADB protocol to control Android phones, directly from Web browsers (or Node.js).
+Source code is located in [https://github.com/nwtgck/piping-adb-web](https://github.com/nwtgck/piping-adb-web).
+
+## Usage
+First, open adbd 5555 port on an Android device using `adb tcpip 5555` or `su 0 setprop service.adb.tcp.port 5555; su 0 stop adbd; su 0 start adbd`
+
+Second, the device starts a tunneling over Piping Server in some way, equivalent to the following command:
+```bash
+curl -sSN https://ppng.io/mycspath | nc localhost 5555 | curl -sSNT - https://ppng.io/myscpath
+```
+
+- [Termux](https://termux.dev) is useful to run `curl` and `nc`.
+- See "[Secure TCP tunnel from anywhere with curl and nc for single connection](https://dev.to/nwtgck/secure-tcp-tunnel-from-anywhere-with-curl-and-nc-for-single-connection-2k5i)" to know how the tunneling works.
+
+Finally, open the following URL on a Chromium-based browser.
+
+[https://piping-adb.nwtgck.org/?auto_connect&server=https://ppng.io&cs_path=mycspath&sc_path=myscpath](https://piping-adb.nwtgck.org/?auto_connect&server=https://ppng.io&cs_path=mycspath&sc_path=myscpath)
+
+## Acknowledgements
+
+This project is highly based on [ya-webadb](https://github.com/yume-chan/ya-webadb). Thanks to the original author!
+
+The following document is from the original README.
+
+---
 
 It started because I want to try the <ExternalLink href="https://developer.mozilla.org/en-US/docs/Web/API/USB">WebUSB</ExternalLink> API, and because I have an Android phone. It's not production-ready, and I don't recommend normal users to try it. If you have any questions or suggestions, please file an issue at <ExternalLink href="https://github.com/yume-chan/ya-webadb/issues">here</ExternalLink>.
 
