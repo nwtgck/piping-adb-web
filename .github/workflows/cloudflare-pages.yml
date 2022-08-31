@@ -1,0 +1,50 @@
+name: Cloudflare Pages
+
+on: [push]
+
+jobs:
+  publish:
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: read
+      deployments: write
+      statuses: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3.4.1
+        with:
+          node-version: 16.x
+
+      - run: node common/scripts/install-run-rush.js install
+      - run: node common/scripts/install-run-rush.js build --verbose
+      - run: npx next export
+        working-directory: ./apps/demo
+
+      - name: Publish to Cloudflare Pages
+        id: cloudflare_pages_deploy
+        uses: cloudflare/pages-action@1
+        with:
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          projectName: piping-adb
+          directory: './apps/demo/out'
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add publish URL as commit status
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // When "pull_request", context.payload.pull_request?.head.sha is expected SHA.
+            // (base: https://github.community/t/github-sha-isnt-the-value-expected/17903/2)
+            const sha = context.payload.pull_request?.head.sha ?? context.sha;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              context: 'Cloudflare Pages',
+              description: 'Cloudflare Pages deployment',
+              state: 'success',
+              sha,
+              target_url: "${{ steps.cloudflare_pages_deploy.outputs.url }}",
+            });
