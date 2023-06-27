@@ -34,7 +34,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { GLOBAL_STATE } from "../state";
 import { CommonStackTokens, Icons } from "../utils";
 
-import {AdbPipingBackend} from "../adb-piping-backend";
+import {AdbDaemonPipingDevice} from "../adb-daemon-piping";
 import {useRouter} from "next/router";
 
 const DropdownStyles = { dropdown: { width: "100%" } };
@@ -179,7 +179,7 @@ function _Connect(): JSX.Element | null {
         });
     }, []);
 
-    const [pipingBackendList, setPipingBackendList] = useState<AdbPipingBackend[]>([]);
+    const [pipingDeviceList, setPipingDeviceList] = useState<AdbDaemonPipingDevice[]>([]);
 
     useEffect(() => {
         const pipingSererUrl = router.query["server"] as string ?? "https://ppng.io";
@@ -190,15 +190,14 @@ function _Connect(): JSX.Element | null {
         }
         const headersString = router.query["headers"] as string | undefined;
         const headers = headersString === undefined ? undefined : new Headers(JSON.parse(decodeURIComponent(headersString)));
-        const adbPipingBackend = new AdbPipingBackend({
+        const device = new AdbDaemonPipingDevice({
             csUrl: urlJoin(pipingSererUrl, csPath),
             scUrl: urlJoin(pipingSererUrl, scPath),
             scHeaders: headers,
             csHeaders: headers,
         });
-        setPipingBackendList([adbPipingBackend]);
-        // setSelectedBackend(adbPipingBackend);
-        setSelected(adbPipingBackend);
+        setPipingDeviceList([device]);
+        setSelected(device);
         const autoConnectString = router.query["auto_connect"] as string | undefined;
         setAutoConnect(autoConnectString === "" || autoConnectString === "true" || autoConnectString === "1");
     }, [router]);
@@ -310,9 +309,9 @@ function _Connect(): JSX.Element | null {
                 usbDeviceList,
                 webSocketDeviceList,
                 tcpDeviceList,
-                pipingBackendList,
+                pipingDeviceList,
             ),
-        [usbDeviceList, webSocketDeviceList, tcpDeviceList, pipingBackendList]
+        [usbDeviceList, webSocketDeviceList, tcpDeviceList, pipingDeviceList]
     );
 
     const deviceOptions = useMemo(() => {

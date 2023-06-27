@@ -7,7 +7,7 @@ import {
   StructDeserializeStream,
 } from '@yume-chan/stream-extra';
 
-export class AdbPipingBackend implements AdbDaemonDevice {
+export class AdbDaemonPipingDevice implements AdbDaemonDevice {
   public readonly serial: string;
   public readonly name: string | undefined = undefined;
 
