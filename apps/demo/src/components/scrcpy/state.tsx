@@ -263,6 +263,9 @@ export class ScrcpyPageState {
                     sendDeviceMeta: false,
                     sendDummyByte: false,
                     videoCodecOptions,
+                    // The document says the following, but it does not work in Nexus 6P
+                    // > When using `AdbScrcpyClient`, it can detect this situation and enable this option automatically.
+                    tunnelForward: true,
                 })
             );
 
