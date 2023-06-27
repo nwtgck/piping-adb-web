@@ -28,7 +28,7 @@ const Shell: NextPage = (): JSX.Element | null => {
     return (
         <>
             <Head>
-                <title>Interactive Shell - Tango</title>
+                <title>Interactive Shell - Piping ADB</title>
             </Head>
 
             <div ref={handleContainerRef} className={classes.container}>

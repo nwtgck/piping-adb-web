@@ -145,7 +145,7 @@ const Install: NextPage = () => {
     return (
         <Stack {...RouteStackProps}>
             <Head>
-                <title>Install APK - Tango</title>
+                <title>Install APK - Piping ADB</title>
             </Head>
 
             <Stack horizontal>

@@ -1,4 +1,25 @@
-# Tango
+# Piping ADB
+[Android Debug Bridge (ADB)](https://developer.android.com/studio/command-line/adb) over [Piping Server](https://github.com/nwtgck/piping-server) on Web browser
+
+## Usage
+First, open adbd 5555 port on an Android device using `adb tcpip 5555` or `su 0 setprop service.adb.tcp.port 5555; su 0 stop adbd; su 0 start adbd`
+
+Second, the device starts a tunneling over Piping Server in some way, equivalent to the following command:   
+```bash
+curl -sSN https://ppng.io/mycspath | nc localhost 5555 | curl -sSNT - https://ppng.io/myscpath
+```
+
+- [Termux](https://termux.dev) is useful to run `curl` and `nc`.
+- See "[Secure TCP tunnel from anywhere with curl and nc for single connection](https://dev.to/nwtgck/secure-tcp-tunnel-from-anywhere-with-curl-and-nc-for-single-connection-2k5i)" to know how the tunneling works.
+
+Finally, open the following URL on a Chromium-based browser.  
+<https://piping-adb.nwtgck.org/?auto_connect&server=https://ppng.io&cs_path=mycspath&sc_path=myscpath>
+
+## Acknowledgements
+
+This project is highly based on [ya-webadb](https://github.com/yume-chan/ya-webadb). Thanks to the original author!
+
+The following document is from the original README.
 
 [![MIT license](https://img.shields.io/github/license/yume-chan/ya-webadb)](https://github.com/yume-chan/ya-webadb/blob/main/LICENSE)
 

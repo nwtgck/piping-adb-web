@@ -169,7 +169,7 @@ const TcpIp: NextPage = () => {
     return (
         <Stack {...RouteStackProps}>
             <Head>
-                <title>ADB over WiFi - Tango</title>
+                <title>ADB over WiFi - Piping ADB</title>
             </Head>
 
             <CommandBar items={state.commandBarItems} />

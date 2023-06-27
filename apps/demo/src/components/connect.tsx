@@ -34,13 +34,22 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { GLOBAL_STATE } from "../state";
 import { CommonStackTokens, Icons } from "../utils";
 
+import {AdbPipingBackend} from "../adb-piping-backend";
+import {useRouter} from "next/router";
+
 const DropdownStyles = { dropdown: { width: "100%" } };
 
 const CredentialStore = new AdbWebCredentialStore();
 
+function urlJoin(baseUrl: string, path: string): string {
+    return baseUrl.replace(/\/$/, '') + "/" + path;
+}
+
 function _Connect(): JSX.Element | null {
     const [selected, setSelected] = useState<AdbDaemonDevice | undefined>();
+    const router = useRouter();
     const [connecting, setConnecting] = useState(false);
+    const [autoConnect, setAutoConnect] = useState(false);
 
     const [usbSupported, setUsbSupported] = useState(true);
     const [usbDeviceList, setUsbDeviceList] = useState<AdbDaemonDevice[]>([]);
@@ -170,6 +179,38 @@ function _Connect(): JSX.Element | null {
         });
     }, []);
 
+    const [pipingBackendList, setPipingBackendList] = useState<AdbPipingBackend[]>([]);
+
+    useEffect(() => {
+        const pipingSererUrl = router.query["server"] as string ?? "https://ppng.io";
+        const csPath = router.query["cs_path"] as string | undefined;
+        const scPath = router.query["sc_path"] as string | undefined;
+        if (csPath === undefined || scPath === undefined) {
+            return;
+        }
+        const headersString = router.query["headers"] as string | undefined;
+        const headers = headersString === undefined ? undefined : new Headers(JSON.parse(decodeURIComponent(headersString)));
+        const adbPipingBackend = new AdbPipingBackend({
+            csUrl: urlJoin(pipingSererUrl, csPath),
+            scUrl: urlJoin(pipingSererUrl, scPath),
+            scHeaders: headers,
+            csHeaders: headers,
+        });
+        setPipingBackendList([adbPipingBackend]);
+        // setSelectedBackend(adbPipingBackend);
+        setSelected(adbPipingBackend);
+        const autoConnectString = router.query["auto_connect"] as string | undefined;
+        setAutoConnect(autoConnectString === "" || autoConnectString === "true" || autoConnectString === "1");
+    }, [router]);
+
+    useEffect(() => {
+        if (autoConnect) {
+            console.log("auto connecting...", selected);
+            connect();
+        }
+    }, [autoConnect]);
+
+
     const handleSelectedChange = (
         e: React.FormEvent<HTMLDivElement>,
         option?: IDropdownOption
@@ -268,9 +309,10 @@ function _Connect(): JSX.Element | null {
             ([] as AdbDaemonDevice[]).concat(
                 usbDeviceList,
                 webSocketDeviceList,
-                tcpDeviceList
+                tcpDeviceList,
+                pipingBackendList,
             ),
-        [usbDeviceList, webSocketDeviceList, tcpDeviceList]
+        [usbDeviceList, webSocketDeviceList, tcpDeviceList, pipingBackendList]
     );
 
     const deviceOptions = useMemo(() => {

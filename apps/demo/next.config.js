@@ -83,6 +83,7 @@ module.exports = pipe(
         },
     },
     withBundleAnalyzer,
-    withPwa,
+    // NOTE: `withPwa` tries to cache a GET response to Piping Server
+    // withPwa,
     withMDX
 );
