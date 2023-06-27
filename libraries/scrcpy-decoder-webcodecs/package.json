@@ -1,11 +1,12 @@
 {
     "name": "@yume-chan/scrcpy-decoder-webcodecs",
-    "version": "0.0.16",
-    "description": "TypeScript implementation of Scrcpy.",
+    "version": "0.0.20",
+    "description": "Raw H.264 stream decoder and renderer using WebCodecs API (requires modern browser).",
     "keywords": [
         "adb",
         "android-phone",
-        "scrcpy-decoder-webcodecs"
+        "scrcpy",
+        "scrcpy-decoder"
     ],
     "license": "MIT",
     "author": {
@@ -28,21 +29,26 @@
     "scripts": {
         "build": "tsc -b tsconfig.build.json",
         "build:watch": "tsc -b tsconfig.build.json",
-        "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+        "//test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+        "lint": "eslint src/**/*.ts --fix && prettier src/**/*.ts --write --tab-width 4",
         "prepublishOnly": "npm run build"
     },
     "dependencies": {
-        "@types/dom-webcodecs": "^0.1.3",
-        "@yume-chan/stream-extra": "workspace:^0.0.16",
-        "@yume-chan/scrcpy": "workspace:^0.0.16",
-        "tslib": "^2.4.0"
+        "@types/dom-webcodecs": "^0.1.6",
+        "@yume-chan/scrcpy": "workspace:^0.0.20",
+        "@yume-chan/scrcpy-decoder-tinyh264": "workspace:^0.0.20",
+        "@yume-chan/stream-extra": "workspace:^0.0.20",
+        "tslib": "^2.5.2"
     },
     "devDependencies": {
-        "@jest/globals": "^28.1.2",
-        "@yume-chan/ts-package-builder": "workspace:^1.0.0",
+        "@jest/globals": "^29.5.0",
+        "@yume-chan/eslint-config": "workspace:^1.0.0",
+        "@yume-chan/tsconfig": "workspace:^1.0.0",
         "cross-env": "^7.0.3",
-        "jest": "^28.1.2",
-        "ts-jest": "^28.0.5",
-        "typescript": "^4.7.4"
+        "eslint": "^8.41.0",
+        "jest": "^29.5.0",
+        "prettier": "^2.8.8",
+        "ts-jest": "^29.0.4",
+        "typescript": "^5.0.3"
     }
 }

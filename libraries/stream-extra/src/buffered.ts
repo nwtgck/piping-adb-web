@@ -1,22 +1,24 @@
+import type { AsyncExactReadable } from "@yume-chan/struct";
+import { ExactReadableEndedError } from "@yume-chan/struct";
+
 import { PushReadableStream } from "./push-readable.js";
 import type { ReadableStream, ReadableStreamDefaultReader } from "./stream.js";
 
-export class BufferedReadableStreamEndedError extends Error {
-    public constructor() {
-        super('Stream ended');
+const NOOP = () => {
+    // no-op
+};
 
-        // Fix Error's prototype chain when compiling to ES5
-        Object.setPrototypeOf(this, new.target.prototype);
+export class BufferedReadableStream implements AsyncExactReadable {
+    #buffered: Uint8Array | undefined;
+    #bufferedOffset = 0;
+    #bufferedLength = 0;
+
+    #position = 0;
+    public get position() {
+        return this.#position;
     }
-}
-
-export class BufferedReadableStream {
-    private buffered: Uint8Array | undefined;
-    private bufferedOffset = 0;
-    private bufferedLength = 0;
 
     protected readonly stream: ReadableStream<Uint8Array>;
-
     protected readonly reader: ReadableStreamDefaultReader<Uint8Array>;
 
     public constructor(stream: ReadableStream<Uint8Array>) {
@@ -27,8 +29,9 @@ export class BufferedReadableStream {
     private async readSource() {
         const { done, value } = await this.reader.read();
         if (done) {
-            throw new BufferedReadableStreamEndedError();
+            throw new ExactReadableEndedError();
         }
+        this.#position += value.byteLength;
         return value;
     }
 
@@ -48,9 +51,9 @@ export class BufferedReadableStream {
             }
 
             if (array.byteLength > length) {
-                this.buffered = array;
-                this.bufferedOffset = length;
-                this.bufferedLength = array.byteLength - length;
+                this.#buffered = array;
+                this.#bufferedOffset = length;
+                this.#bufferedLength = array.byteLength - length;
                 return array.subarray(0, length);
             }
 
@@ -68,9 +71,9 @@ export class BufferedReadableStream {
             }
 
             if (array.byteLength > length) {
-                this.buffered = array;
-                this.bufferedOffset = length;
-                this.bufferedLength = array.byteLength - length;
+                this.#buffered = array;
+                this.#bufferedOffset = length;
+                this.#bufferedLength = array.byteLength - length;
                 result.set(array.subarray(0, length), index);
                 return result;
             }
@@ -88,20 +91,22 @@ export class BufferedReadableStream {
      * @param length
      * @returns
      */
-    public read(length: number): Uint8Array | Promise<Uint8Array> {
+    public readExactly(length: number): Uint8Array | Promise<Uint8Array> {
         // PERF: Add a synchronous path for reading from internal buffer
-        if (this.buffered) {
-            const array = this.buffered;
-            const offset = this.bufferedOffset;
-            if (this.bufferedLength > length) {
+        if (this.#buffered) {
+            const array = this.#buffered;
+            const offset = this.#bufferedOffset;
+            if (this.#bufferedLength > length) {
                 // PERF: `subarray` is slow
                 // don't use it until absolutely necessary
-                this.bufferedOffset += length;
-                this.bufferedLength -= length;
+                this.#bufferedOffset += length;
+                this.#bufferedLength -= length;
                 return array.subarray(offset, offset + length);
             }
 
-            this.buffered = undefined;
+            this.#buffered = undefined;
+            this.#bufferedLength = 0;
+            this.#bufferedOffset = 0;
             return this.readAsync(length, array.subarray(offset));
         }
 
@@ -114,24 +119,24 @@ export class BufferedReadableStream {
      * @returns A `ReadableStream`
      */
     public release(): ReadableStream<Uint8Array> {
-        if (this.buffered) {
-            return new PushReadableStream<Uint8Array>(async controller => {
+        if (this.#bufferedLength > 0) {
+            return new PushReadableStream<Uint8Array>(async (controller) => {
                 // Put the remaining data back to the stream
-                await controller.enqueue(this.buffered!);
+                const buffered = this.#buffered!.subarray(this.#bufferedOffset);
+                await controller.enqueue(buffered);
+
+                controller.abortSignal.addEventListener("abort", () => {
+                    // NOOP: the reader might already be released
+                    this.reader.cancel().catch(NOOP);
+                });
 
                 // Manually pipe the stream
                 while (true) {
-                    try {
-                        const { done, value } = await this.reader.read();
-                        if (done) {
-                            controller.close();
-                            break;
-                        } else {
-                            await controller.enqueue(value);
-                        }
-                    } catch (e) {
-                        controller.error(e);
-                        break;
+                    const { done, value } = await this.reader.read();
+                    if (done) {
+                        return;
+                    } else {
+                        await controller.enqueue(value);
                     }
                 }
             });
@@ -142,7 +147,7 @@ export class BufferedReadableStream {
         }
     }
 
-    public cancel(reason?: any) {
+    public cancel(reason?: unknown) {
         return this.reader.cancel(reason);
     }
 }

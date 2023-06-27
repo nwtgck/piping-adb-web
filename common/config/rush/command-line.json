@@ -169,9 +169,10 @@
             "commandKind": "bulk",
             "name": "build",
             "summary": "Builds all projects",
+            "ignoreMissingScript": true,
+            "allowWarningsInSuccessfulBuild": true,
             "enableParallelism": true,
-            "incremental": true,
-            "allowWarningsInSuccessfulBuild": true
+            "incremental": true
         },
         {
             "commandKind": "bulk",
@@ -180,7 +181,18 @@
             "ignoreMissingScript": true,
             "allowWarningsInSuccessfulBuild": true,
             "enableParallelism": true,
-            "incremental": true
+            "incremental": true,
+            "safeForSimultaneousRushProcesses": true
+        },
+        {
+            "commandKind": "bulk",
+            "name": "lint",
+            "summary": "Run ESLint in each projects",
+            "ignoreMissingScript": true,
+            "allowWarningsInSuccessfulBuild": true,
+            "enableParallelism": true,
+            "incremental": true,
+            "safeForSimultaneousRushProcesses": true
         },
         {
             "commandKind": "bulk",

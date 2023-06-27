@@ -1,0 +1,20 @@
+{
+    "extends": "./node_modules/@yume-chan/tsconfig/tsconfig.base.json",
+    "compilerOptions": {
+        "lib": [
+            "ESNext",
+            "DOM"
+        ],
+        "types": [
+            "node"
+        ]
+    },
+    "references": [
+        {
+            "path": "../adb/tsconfig.build.json"
+        },
+        {
+            "path": "../stream-extra/tsconfig.build.json"
+        }
+    ]
+}

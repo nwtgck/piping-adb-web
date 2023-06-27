@@ -1,27 +1,28 @@
-import { WritableStream, type ReadableWritablePair } from "./stream.js";
+import type { ReadableWritablePair } from "./stream.js";
+import { WritableStream } from "./stream.js";
 
 /**
- * Create a new `WritableStream` that, when written to, will write that chunk to
- * `pair.writable`, when pipe `pair.readable` to `writable`.
+ * Pipe `pair.readable` to `writable`, then returns `pair.writable`.
  *
- * It's the opposite of `ReadableStream.pipeThrough`.
+ * This is the opposite of `ReadableStream#pipeThrough()`.
  *
  * @param writable The `WritableStream` to write to.
  * @param pair A `TransformStream` that converts chunks.
- * @returns A new `WritableStream`.
+ * @returns `pair`'s `writable` stream.
  */
-export function pipeFrom<W, T>(writable: WritableStream<W>, pair: ReadableWritablePair<W, T>) {
+export function pipeFrom<W, T>(
+    writable: WritableStream<W>,
+    pair: ReadableWritablePair<W, T>
+) {
     const writer = pair.writable.getWriter();
-    const pipe = pair.readable
-        .pipeTo(writable);
+    const pipe = pair.readable.pipeTo(writable);
     return new WritableStream<T>({
         async write(chunk) {
-            await writer.ready;
             await writer.write(chunk);
         },
         async close() {
             await writer.close();
             await pipe;
-        }
+        },
     });
 }

@@ -1,22 +1,25 @@
-import type { ReadableStream, WritableStream } from '@yume-chan/stream-extra';
-import type { ValueOrPromise } from '@yume-chan/struct';
+import type {
+    Consumable,
+    ReadableStream,
+    WritableStream,
+} from "@yume-chan/stream-extra";
+import type { ValueOrPromise } from "@yume-chan/struct";
 
-import type { Adb } from '../../../adb.js';
-import type { AdbSocket } from '../../../socket/index.js';
+import type { Adb, AdbSocket } from "../../../adb.js";
 
 export interface AdbSubprocessProtocol {
     /**
-     * A WritableStream that writes to the `stdin` pipe.
+     * A WritableStream that writes to the `stdin` stream.
      */
-    readonly stdin: WritableStream<Uint8Array>;
+    readonly stdin: WritableStream<Consumable<Uint8Array>>;
 
     /**
-     * The `stdout` pipe of the process.
+     * The `stdout` stream of the process.
      */
     readonly stdout: ReadableStream<Uint8Array>;
 
     /**
-     * The `stderr` pipe of the process.
+     * The `stderr` stream of the process.
      *
      * Note: Some `AdbSubprocessProtocol` doesn't separate `stdout` and `stderr`,
      * All output will be sent to `stdout`.
@@ -56,5 +59,5 @@ export interface AdbSubprocessProtocolConstructor {
     raw(adb: Adb, command: string): ValueOrPromise<AdbSubprocessProtocol>;
 
     /** Creates a new `AdbShell` by attaching to an exist `AdbSocket` */
-    new(socket: AdbSocket): AdbSubprocessProtocol;
+    new (socket: AdbSocket): AdbSubprocessProtocol;
 }

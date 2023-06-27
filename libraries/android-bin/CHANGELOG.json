@@ -2,6 +2,45 @@
   "name": "@yume-chan/android-bin",
   "entries": [
     {
+      "version": "0.0.20",
+      "tag": "@yume-chan/android-bin_v0.0.20",
+      "date": "Mon, 05 Jun 2023 02:51:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.0.19",
+      "tag": "@yume-chan/android-bin_v0.0.19",
+      "date": "Sun, 09 Apr 2023 05:55:33 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add wrapper for `cmd`, with support for Android Binder Bridge (abb)"
+          },
+          {
+            "comment": "Add `OverlayDisplay` wrapper for managing overlay displays"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.0.18",
+      "tag": "@yume-chan/android-bin_v0.0.18",
+      "date": "Wed, 25 Jan 2023 21:33:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.0.17",
+      "tag": "@yume-chan/android-bin_v0.0.17",
+      "date": "Tue, 18 Oct 2022 09:32:30 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to use new stream util package"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.16",
       "tag": "@yume-chan/android-bin_v0.0.16",
       "date": "Sat, 28 May 2022 03:56:37 GMT",

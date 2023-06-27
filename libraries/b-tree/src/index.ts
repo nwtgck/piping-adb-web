@@ -3,7 +3,12 @@ interface BTreeInsertionResult {
     child: BTreeNode;
 }
 
-function insert(array: Int32Array, length: number, value: number, index: number) {
+function insert(
+    array: Int32Array,
+    length: number,
+    value: number,
+    index: number
+) {
     if (index !== length) {
         array.set(array.subarray(index, length), index + 1);
     }
@@ -54,7 +59,11 @@ export class BTreeNode {
      * @returns The new key and child need to be inserted to its parent.
      * The new key is the middle key of the current node, and the child contains the right half of the current node.
      */
-    protected split(value: number, index: number, child?: BTreeNode): BTreeInsertionResult {
+    protected split(
+        value: number,
+        index: number,
+        child?: BTreeNode
+    ): BTreeInsertionResult {
         let middleKey: number;
         const rightKeys = new Int32Array(this.order - 1);
         let rightChildren: BTreeNode[];
@@ -67,13 +76,16 @@ export class BTreeNode {
 
             if (child) {
                 // internal node
-                rightChildren = this.children.splice(this.mid, this.order - this.mid);
+                rightChildren = this.children.splice(
+                    this.mid,
+                    this.order - this.mid
+                );
                 // TODO: this may cause the underlying array to grow (re-alloc and copy)
                 // investigate if this hurts performance.
                 this.children.splice(index + 1, 0, child);
             } else {
                 // leaf node, doesn't have children, create am empty array for it.
-                rightChildren = new Array(this.order);
+                rightChildren = new Array<BTreeNode>(this.order);
             }
         } else {
             if (index === this.mid) {
@@ -89,10 +101,13 @@ export class BTreeNode {
             }
 
             if (child) {
-                rightChildren = this.children.splice(this.mid + 1, this.order - this.mid - 1);
+                rightChildren = this.children.splice(
+                    this.mid + 1,
+                    this.order - this.mid - 1
+                );
                 rightChildren.splice(index - this.mid, 0, child);
             } else {
-                rightChildren = new Array(this.order);
+                rightChildren = new Array<BTreeNode>(this.order);
             }
         }
 
@@ -127,13 +142,16 @@ export class BTreeNode {
 
     public has(value: number): boolean {
         let index = this.search(value);
+
         if (index >= 0) {
             return true;
         }
+
         if (this.height > 0) {
             index = ~index;
             return this.children[index]!.has(value);
         }
+
         return false;
     }
 
@@ -156,7 +174,7 @@ export class BTreeNode {
         }
 
         const split = this.children[index]!.add(value);
-        if (typeof split === 'object') {
+        if (typeof split === "object") {
             if (this.keyCount === this.order - 1) {
                 return this.split(split.key, index, split.child);
             }
@@ -177,16 +195,18 @@ export class BTreeNode {
             return true;
         }
 
-        if (this.height > 0) {
-            index = ~index;
-            const deleted = this.children[index]!.delete(value);
-            if (deleted) {
-                this.balance(index);
-            }
-            return deleted;
+        if (this.height === 0) {
+            return false;
         }
 
-        return false;
+        index = ~index;
+        const deleted = this.children[index]!.delete(value);
+
+        if (deleted) {
+            this.balance(index);
+        }
+
+        return deleted;
     }
 
     public max(): number {
@@ -221,9 +241,12 @@ export class BTreeNode {
             // merge with left
             left.keys[left.keyCount] = this.keys[index - 1]!;
             left.keyCount += 1;
-            left.keys.set(child.keys.subarray(0, child.keyCount), left.keyCount);
+            left.keys.set(
+                child.keys.subarray(0, child.keyCount),
+                left.keyCount
+            );
             if (this.height > 1) {
-                for (let i = 0; i <= child.keyCount; i++) {
+                for (let i = 0; i <= child.keyCount; i += 1) {
                     left.children[left.keyCount + i] = child.children[i]!;
                 }
             }
@@ -239,7 +262,10 @@ export class BTreeNode {
             // rotate left
             child.keys[child.keyCount] = this.keys[index]!;
             if (this.height > 1) {
-                child.children[child.keyCount + 1] = right.children.splice(0, 1)[0]!;
+                child.children[child.keyCount + 1] = right.children.splice(
+                    0,
+                    1
+                )[0]!;
             }
             child.keyCount += 1;
 
@@ -255,7 +281,7 @@ export class BTreeNode {
         child.keyCount += 1;
         child.keys.set(right.keys.subarray(0, right.keyCount), child.keyCount);
         if (this.height > 1) {
-            for (let i = 0; i <= right.keyCount; i++) {
+            for (let i = 0; i <= right.keyCount; i += 1) {
                 child.children[child.keyCount + i] = right.children[i]!;
             }
         }
@@ -305,25 +331,27 @@ export class BTreeNode {
 }
 
 export class BTree {
-    order: number;
-    root: BTreeNode;
+    private _order: number;
+    public get order() {
+        return this._order;
+    }
 
-    size: number = 0;
+    private _root: BTreeNode;
+
+    private _size = 0;
+    public get size() {
+        return this._size;
+    }
 
     public constructor(order: number) {
-        this.order = order;
-        this.root = new BTreeNode(
-            order,
-            new Int32Array(order - 1),
-            0,
-            0,
-            new Array(order)
-        );
+        this._order = order;
+        const keys = new Int32Array(order - 1);
+        const children = new Array<BTreeNode>(order);
+        this._root = new BTreeNode(order, keys, 0, 0, children);
     }
 
     public has(value: number) {
-        // TODO(btree): benchmark this non-recursive version
-        let node = this.root;
+        let node = this._root;
         while (true) {
             const index = node.search(value);
             if (index >= 0) {
@@ -338,49 +366,49 @@ export class BTree {
     }
 
     public add(value: number) {
-        const split = this.root.add(value);
-        if (typeof split === 'object') {
-            const keys = new Int32Array(this.order - 1);
+        const split = this._root.add(value);
+        if (typeof split === "object") {
+            const keys = new Int32Array(this._order - 1);
             keys[0] = split.key;
 
-            const children = new Array(this.order);
-            children[0] = this.root;
+            const children = new Array<BTreeNode>(this._order);
+            children[0] = this._root;
             children[1] = split.child;
 
-            this.root = new BTreeNode(
-                this.order,
+            this._root = new BTreeNode(
+                this._order,
                 keys,
                 1,
-                this.root.height + 1,
+                this._root.height + 1,
                 children
             );
         }
         if (split) {
-            this.size += 1;
+            this._size += 1;
         }
         return !!split;
     }
 
     public delete(value: number) {
-        const deleted = this.root.delete(value);
+        const deleted = this._root.delete(value);
         if (deleted) {
-            if (this.root.height > 0 && this.root.keyCount === 0) {
-                this.root = this.root.children[0]!;
+            if (this._root.height > 0 && this._root.keyCount === 0) {
+                this._root = this._root.children[0]!;
             }
-            this.size -= 1;
+            this._size -= 1;
         }
         return deleted;
     }
 
     public clear() {
-        this.root.keyCount = 0;
-        this.root.height = 0;
+        this._root.keyCount = 0;
+        this._root.height = 0;
         // immediately release all references
-        this.root.children = new Array(this.order);
-        this.size = 0;
+        this._root.children = new Array<BTreeNode>(this._order);
+        this._size = 0;
     }
 
     public [Symbol.iterator]() {
-        return this.root[Symbol.iterator]();
+        return this._root[Symbol.iterator]();
     }
 }

@@ -1,19 +1,20 @@
 {
-    "$schema": "https://json.schemastore.org/web-manifest-combined.json",
-    "background_color": "#ffffff",
+    "name": "Tango",
+    "short_name": "Tango",
     "categories": [
-        "utilities"
+        "utilities",
+        "developer"
     ],
-    "description": "ADB over Piping Server in your browser",
+    "description": "ADB in your browser",
+    "scope": "/",
+    "start_url": "/",
+    "background_color": "#ffffff",
     "display": "standalone",
     "icons": [
         {
-            "src": "favicon.ico"
+            "src": "favicon-256.png",
+            "type": "image/png",
+            "sizes": "256x256"
         }
-    ],
-    "isolated_storage": true,
-    "name": "Piping ADB",
-    "short_name": "Piping ADB",
-    "start_url": "/",
-    "scope": "/"
+    ]
 }

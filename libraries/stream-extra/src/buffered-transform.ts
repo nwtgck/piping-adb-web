@@ -1,35 +1,48 @@
-import type { ValueOrPromise } from '@yume-chan/struct';
-import { BufferedReadableStream, BufferedReadableStreamEndedError } from './buffered.js';
-import { PushReadableStream, PushReadableStreamController } from './push-readable.js';
-import { ReadableStream, ReadableWritablePair, WritableStream } from './stream.js';
+import type { ValueOrPromise } from "@yume-chan/struct";
+import { StructEmptyError } from "@yume-chan/struct";
+
+import { BufferedReadableStream } from "./buffered.js";
+import type { PushReadableStreamController } from "./push-readable.js";
+import { PushReadableStream } from "./push-readable.js";
+import type { ReadableWritablePair } from "./stream.js";
+import { ReadableStream, WritableStream } from "./stream.js";
 
 // TODO: BufferedTransformStream: find better implementation
-export class BufferedTransformStream<T> implements ReadableWritablePair<T, Uint8Array> {
-    private _readable: ReadableStream<T>;
-    public get readable() { return this._readable; }
+export class BufferedTransformStream<T>
+    implements ReadableWritablePair<T, Uint8Array>
+{
+    #readable: ReadableStream<T>;
+    public get readable() {
+        return this.#readable;
+    }
 
-    private _writable: WritableStream<Uint8Array>;
-    public get writable() { return this._writable; }
+    #writable: WritableStream<Uint8Array>;
+    public get writable() {
+        return this.#writable;
+    }
 
-    constructor(transform: (stream: BufferedReadableStream) => ValueOrPromise<T>) {
+    constructor(
+        transform: (stream: BufferedReadableStream) => ValueOrPromise<T>
+    ) {
         // Convert incoming chunks to a `BufferedReadableStream`
         let sourceStreamController!: PushReadableStreamController<Uint8Array>;
 
-        const buffered = new BufferedReadableStream(new PushReadableStream<Uint8Array>(
-            controller =>
-                sourceStreamController = controller,
-        ));
+        const buffered = new BufferedReadableStream(
+            new PushReadableStream<Uint8Array>((controller) => {
+                sourceStreamController = controller;
+            })
+        );
 
-        this._readable = new ReadableStream<T>({
+        this.#readable = new ReadableStream<T>({
             async pull(controller) {
                 try {
                     const value = await transform(buffered);
                     controller.enqueue(value);
                 } catch (e) {
-                    // TODO: BufferedTransformStream: The semantic of stream ending is not clear
-                    // If the `transform` started but did not finish, it should really be an error?
-                    // But we can't detect that, unless there is a `peek` method on buffered stream.
-                    if (e instanceof BufferedReadableStreamEndedError) {
+                    // Treat `StructEmptyError` as a normal end.
+                    // If the `transform` method doesn't have enough data to return a value,
+                    // it should throw another error to indicate that.
+                    if (e instanceof StructEmptyError) {
                         controller.close();
                         return;
                     }
@@ -39,11 +52,11 @@ export class BufferedTransformStream<T> implements ReadableWritablePair<T, Uint8
             cancel: (reason) => {
                 // Propagate cancel to the source stream
                 // So future writes will be rejected
-                buffered.cancel(reason);
-            }
+                return buffered.cancel(reason);
+            },
         });
 
-        this._writable = new WritableStream({
+        this.#writable = new WritableStream({
             async write(chunk) {
                 await sourceStreamController.enqueue(chunk);
             },

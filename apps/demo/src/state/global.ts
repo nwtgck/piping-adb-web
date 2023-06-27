@@ -1,23 +1,24 @@
-import { Adb, AdbBackend, AdbPacketData } from "@yume-chan/adb";
-import { action, makeAutoObservable, observable } from 'mobx';
+import { Adb, AdbDaemonDevice, AdbPacketData } from "@yume-chan/adb";
+import { action, makeAutoObservable, observable } from "mobx";
 
-export type PacketLogItemDirection = 'in' | 'out';
+export type PacketLogItemDirection = "in" | "out";
 
 export interface PacketLogItem extends AdbPacketData {
     direction: PacketLogItemDirection;
 
+    timestamp?: Date;
     commandString?: string;
     arg0String?: string;
     arg1String?: string;
     payloadString?: string;
 }
 
-export class GlobalStateType {
-    backend: AdbBackend | undefined = undefined;
-    device: Adb | undefined = undefined;
+export class GlobalState {
+    device: AdbDaemonDevice | undefined = undefined;
+    adb: Adb | undefined = undefined;
 
     errorDialogVisible = false;
-    errorDialogMessage = '';
+    errorDialogMessage = "";
 
     logs: PacketLogItem[] = [];
 
@@ -28,9 +29,9 @@ export class GlobalStateType {
         });
     }
 
-    setDevice(backend: AdbBackend | undefined, device: Adb | undefined) {
-        this.backend = backend;
+    setDevice(device: AdbDaemonDevice | undefined, adb: Adb | undefined) {
         this.device = device;
+        this.adb = adb;
     }
 
     showErrorDialog(message: Error | string) {
@@ -47,13 +48,17 @@ export class GlobalStateType {
     }
 
     appendLog(direction: PacketLogItemDirection, packet: AdbPacketData) {
-        (packet as PacketLogItem).direction = direction;
-        this.logs.push((packet as PacketLogItem));
+        this.logs.push({
+            ...packet,
+            direction,
+            timestamp: new Date(),
+            payload: packet.payload.slice(),
+        } as PacketLogItem);
     }
 
     clearLog() {
-        this.logs = [];
+        this.logs.length = 0;
     }
 }
 
-export const GlobalState = new GlobalStateType();
+export const GLOBAL_STATE = new GlobalState();
