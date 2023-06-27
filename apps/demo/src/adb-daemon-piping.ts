@@ -24,7 +24,7 @@ export class AdbDaemonPipingDevice implements AdbDaemonDevice {
     const {readable: uploadReadableStream, writable: uploadWritableStream} = new TransformStream<Uint8Array>();
     fetch(this.params.csUrl, {
       method: "POST",
-      // headers: this.params.csHeaders,
+      headers: this.params.csHeaders,
       body: uploadReadableStream,
       duplex: "half",
     } as RequestInit);
