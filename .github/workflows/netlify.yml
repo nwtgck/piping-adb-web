@@ -17,7 +17,7 @@ jobs:
       - run: npx next export
         working-directory: ./apps/demo
       - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v1.2
+        uses: nwtgck/actions-netlify@v2.0
         with:
           publish-dir: './apps/demo/out'
           production-branch: main
