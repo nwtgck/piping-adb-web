@@ -6,14 +6,14 @@ First, open adbd 5555 port on an Android device using `adb tcpip 5555` or `su 0 
 
 Second, the device starts a tunneling over Piping Server in some way, equivalent to the following command:   
 ```bash
-curl -sSN https://ppng.io/mycspath | nc localhost 5555 | curl -sSNT - https://ppng.io/myscpath
+curl -sSN https://ppng.io/aaa | nc localhost 5555 | curl -sSNT - https://ppng.io/bbb
 ```
 
 - [Termux](https://termux.dev) is useful to run `curl` and `nc`.
 - See "[Secure TCP tunnel from anywhere with curl and nc for single connection](https://dev.to/nwtgck/secure-tcp-tunnel-from-anywhere-with-curl-and-nc-for-single-connection-2k5i)" to know how the tunneling works.
 
 Finally, open the following URL on a Chromium-based browser.  
-<https://piping-adb.nwtgck.org/?auto_connect&server=https://ppng.io&cs_path=mycspath&sc_path=myscpath>
+<https://piping-adb.nwtgck.org/#?auto_connect&server=https://ppng.io&cs_path=aaa&sc_path=bbb>
 
 ## Acknowledgements
 

@@ -35,7 +35,7 @@ import { GLOBAL_STATE } from "../state";
 import { CommonStackTokens, Icons } from "../utils";
 
 import {AdbDaemonPipingDevice} from "../adb-daemon-piping";
-import {useRouter} from "next/router";
+import {fragmentParams} from "../fragment-params";
 
 const DropdownStyles = { dropdown: { width: "100%" } };
 
@@ -47,7 +47,6 @@ function urlJoin(baseUrl: string, path: string): string {
 
 function _Connect(): JSX.Element | null {
     const [selected, setSelected] = useState<AdbDaemonDevice | undefined>();
-    const router = useRouter();
     const [connecting, setConnecting] = useState(false);
     const [autoConnect, setAutoConnect] = useState(false);
 
@@ -182,14 +181,13 @@ function _Connect(): JSX.Element | null {
     const [pipingDeviceList, setPipingDeviceList] = useState<AdbDaemonPipingDevice[]>([]);
 
     useEffect(() => {
-        const pipingSererUrl = router.query["server"] as string ?? "https://ppng.io";
-        const csPath = router.query["cs_path"] as string | undefined;
-        const scPath = router.query["sc_path"] as string | undefined;
+        const pipingSererUrl = fragmentParams.pipingServerUrl() ?? "https://ppng.io";
+        const csPath = fragmentParams.csPath();
+        const scPath = fragmentParams.scPath();
         if (csPath === undefined || scPath === undefined) {
             return;
         }
-        const headersString = router.query["headers"] as string | undefined;
-        const headers = headersString === undefined ? undefined : new Headers(JSON.parse(decodeURIComponent(headersString)));
+        const headers = new Headers(fragmentParams.pipingServerHeaders() ?? []);
         const device = new AdbDaemonPipingDevice({
             csUrl: urlJoin(pipingSererUrl, csPath),
             scUrl: urlJoin(pipingSererUrl, scPath),
@@ -198,16 +196,15 @@ function _Connect(): JSX.Element | null {
         });
         setPipingDeviceList([device]);
         setSelected(device);
-        const autoConnectString = router.query["auto_connect"] as string | undefined;
-        setAutoConnect(autoConnectString === "" || autoConnectString === "true" || autoConnectString === "1");
-    }, [router]);
+        setAutoConnect(fragmentParams.autoConnect() ?? false);
+    }, []);
 
     useEffect(() => {
-        if (autoConnect) {
+        if (autoConnect && selected !== undefined) {
             console.log("auto connecting...", selected);
             connect();
         }
-    }, [autoConnect]);
+    }, [autoConnect, selected]);
 
 
     const handleSelectedChange = (
