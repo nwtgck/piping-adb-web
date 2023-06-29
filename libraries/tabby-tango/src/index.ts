@@ -1,4 +1,4 @@
-import { NgModule } from "@angular/core";
+import {NgModule, OnInit} from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
 import TabbyCorePlugin, {
@@ -31,6 +31,24 @@ export { AdbState };
     declarations: [AdbTerminalTabComponent],
     exports: [AdbTerminalTabComponent],
 })
-export default class AdbTerminalModule {
-    constructor(app: AppService) {}
+export default class AdbTerminalModule implements OnInit {
+    constructor(private app: AppService) {
+        // app.openNewTabRaw({type: null as any});
+    }
+    
+    ngOnInit() {
+        console.log("!!!!!!!! on init");
+        this.app.openNewTab({
+            type: AdbTerminalTabComponent,
+            inputs: {
+                profile: {
+                    id: "adb",
+                    type: "adb",
+                    name: "ADB shell",
+                    icon: "fas fa-microchip",
+                    isBuiltin: true,
+                },
+            }
+        });
+    }
 }
